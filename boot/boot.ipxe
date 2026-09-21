@@ -18,6 +18,6 @@ echo
 
 # vmlinuz and initrd were extracted out of the ISO. Linux takes over from
 # here, and the installer fetches the ISO itself over HTTP -- that is url=.
-kernel http://${server}/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/${image}/ubuntu.iso ---
+kernel http://${server}/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/${image}/image.iso ---
 initrd http://${server}/${image}/initrd
 boot
