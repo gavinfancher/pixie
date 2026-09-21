@@ -8,12 +8,16 @@
 # then asks the router for the installer and gets "Permission denied".
 set server 10.0.0.55
 
+# Which image to boot. Each lives in its own directory under images/, so
+# adding a second release later is one more directory and one more choice.
+set image ubuntu-26.04
+
 echo
-echo   pixie: booting the Ubuntu Server installer from ${server}
+echo   pixie: booting ${image} from ${server}
 echo
 
 # vmlinuz and initrd were extracted out of the ISO. Linux takes over from
 # here, and the installer fetches the ISO itself over HTTP -- that is url=.
-kernel http://${server}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/ubuntu.iso ---
-initrd http://${server}/initrd
+kernel http://${server}/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/${image}/ubuntu.iso ---
+initrd http://${server}/${image}/initrd
 boot

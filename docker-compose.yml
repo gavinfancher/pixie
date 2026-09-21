@@ -11,14 +11,14 @@ services:
       - NET_ADMIN
     volumes:
       - ./dnsmasq.conf:/etc/dnsmasq.conf:ro
-      - ./tftp:/tftp:ro
+      - ./boot:/boot:ro
 
   # Serves the kernel, the initrd and the ISO. TFTP is far too slow for these,
   # and unlike dnsmasq this needs no special networking -- a normal port is fine.
-  www:
+  nginx:
     image: nginx:alpine
     restart: unless-stopped
     ports:
       - "80:80"
     volumes:
-      - ./www:/usr/share/nginx/html:ro
+      - ./images:/usr/share/nginx/html:ro
