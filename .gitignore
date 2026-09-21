@@ -1,0 +1,6 @@
+# Downloaded, not authored. Fetch instead of committing:
+#   curl -fL -o tftp/ipxe.efi https://boot.ipxe.org/x86_64-efi/ipxe.efi
+tftp/ipxe.efi
+
+# The Ubuntu ISO and the kernel/initrd extracted from it (~3GB).
+www/

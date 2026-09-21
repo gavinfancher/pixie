@@ -1,0 +1,19 @@
+#!ipxe
+
+# Our own address, stated explicitly.
+#
+# It is tempting to use iPXE's ${next-server} here instead. Don't. Once iPXE
+# starts it makes its own DHCP request, UniFi answers that one as well, and
+# its reply overwrites next-server with the gateway (10.0.0.1). The machine
+# then asks the router for the installer and gets "Permission denied".
+set server 10.0.0.55
+
+echo
+echo   pixie: booting the Ubuntu Server installer from ${server}
+echo
+
+# vmlinuz and initrd were extracted out of the ISO. Linux takes over from
+# here, and the installer fetches the ISO itself over HTTP -- that is url=.
+kernel http://${server}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/ubuntu.iso ---
+initrd http://${server}/initrd
+boot

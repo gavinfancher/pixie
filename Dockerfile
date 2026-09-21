@@ -1,0 +1,4 @@
+# Alpine plus dnsmasq. Nothing else.
+FROM alpine:3.20
+RUN apk add --no-cache dnsmasq
+ENTRYPOINT ["dnsmasq", "--no-daemon", "--conf-file=/etc/dnsmasq.conf"]
