@@ -8,16 +8,40 @@
 # then asks the router for the installer and gets "Permission denied".
 set server 10.0.0.55
 
-# Which image to boot. Each lives in its own directory under images/, so
-# adding a second release later is one more directory and one more choice.
-set image ubuntu-26.04
+:menu
+menu pixie  --  ${net0/mac}
+item u2604   Ubuntu Server 26.04
+item u2404   Ubuntu Server 24.04
+item local   Boot from local disk
+choose --default u2604 --timeout 30000 target || goto local
+goto ${target}
 
+# Each release is a directory under images/. Adding one is a new label here
+# plus a new item above.
+:u2604
+set image ubuntu-26.04
+goto install
+
+:u2404
+set image ubuntu-24.04
+goto install
+
+:install
 echo
 echo   pixie: booting ${image} from ${server}
 echo
-
 # vmlinuz and initrd were extracted out of the ISO. Linux takes over from
 # here, and the installer fetches the ISO itself over HTTP -- that is url=.
 kernel http://${server}/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/${image}/image.iso ---
 initrd http://${server}/${image}/initrd
-boot
+boot || goto failed
+
+:local
+echo Booting from local disk.
+exit 0
+
+:failed
+echo
+echo   ${image} failed to boot. Was it fetched?  ./scripts/fetch-image.sh ${image}
+prompt Press a key to return to the menu.
+goto menu
