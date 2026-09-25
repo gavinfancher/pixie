@@ -12,8 +12,8 @@ set server 10.0.0.55
 menu pixie  --  ${net0/mac}
 item u2604   Ubuntu Server 26.04
 item u2404   Ubuntu Server 24.04
-item local   Boot from local disk
-choose --default u2604 --timeout 30000 target || goto local
+item local   Boot from local disk (default)
+choose --default local --timeout 30000 target || goto local
 goto ${target}
 
 # Each release is a directory under images/. Adding one is a new label here
