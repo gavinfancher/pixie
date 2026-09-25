@@ -1,0 +1,36 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  # Just enough to get a bootable machine that Ansible can reach.
+  # Everything else belongs in Ansible, which can be re-run; this file
+  # only ever executes once, during installation.
+
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+
+  # Whole first disk, LVM. Fine for identical mini PCs. Pin this to a disk
+  # serial if a machine ever has more than one drive.
+  storage:
+    layout:
+      name: lvm
+
+  # SSH keys only. No password is set on the account, so this file contains
+  # nothing secret and can be served over plain HTTP.
+  user-data:
+    hostname: ubuntu
+    users:
+      - name: gavin
+        groups: [adm, sudo]
+        shell: /bin/bash
+        sudo: "ALL=(ALL) NOPASSWD:ALL"
+        lock_passwd: true
+        ssh_authorized_keys:
+          - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF1WilHLdRuxd4ZxJi1SKalgBgR7EaAHHaTDWgMxO+UH gavin@gavin-macbook-pro.localdomain
+
+  ssh:
+    install-server: true
+    allow-pw: false
+
+  shutdown: reboot

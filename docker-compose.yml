@@ -21,4 +21,8 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./images:/usr/share/nginx/html:ro
+      # Siblings under the web root, so the URL layout mirrors the repo.
+      # Neither can be nested inside the other: Docker cannot create a
+      # mountpoint inside a read-only bind mount.
+      - ./images:/usr/share/nginx/html/images:ro
+      - ./autoinstall:/usr/share/nginx/html/autoinstall:ro

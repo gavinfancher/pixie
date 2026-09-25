@@ -32,8 +32,20 @@ docker compose up -d
 
 ## Booting a machine
 
-Power on, pick network boot (usually F12). A menu appears; choose a release.
-It downloads ~2.7GB and the Ubuntu installer starts.
+Power on, pick network boot (usually F12). A menu appears.
+
+Choosing a release installs Ubuntu **unattended and erases the disk**. The
+menu defaults to "boot from local disk" after 30 seconds, so a machine that
+netboots by accident is left alone.
+
+When it reboots, log in with your SSH key:
+
+```sh
+ssh gavin@<new-machine-ip>
+```
+
+There is no password on the account -- keys only. Set one later with Ansible
+if you want a console fallback.
 
 Watch what happens: `docker compose logs -f dnsmasq`
 
@@ -90,6 +102,7 @@ is why there are two services.
 | `dnsmasq.conf` | The PXE rules |
 | `boot/boot.ipxe` | The menu, and how each release boots |
 | `images/<release>/image.conf` | Where an ISO comes from and what is inside it |
+| `autoinstall/user-data` | The installer's answers. Holds no secret: SSH key only |
 | `scripts/fetch-image.sh` | Downloads, verifies, extracts |
 | `docker-compose.yml` | dnsmasq needs host networking for broadcasts; nginx does not |
 

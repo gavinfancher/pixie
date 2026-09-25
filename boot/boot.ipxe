@@ -10,8 +10,8 @@ set server 10.0.0.55
 
 :menu
 menu pixie  --  ${net0/mac}
-item u2604   Ubuntu Server 26.04
-item u2404   Ubuntu Server 24.04
+item u2604   Install Ubuntu Server 26.04   ** ERASES THE DISK **
+item u2404   Install Ubuntu Server 24.04   ** ERASES THE DISK **
 item local   Boot from local disk (default)
 choose --default local --timeout 30000 target || goto local
 goto ${target}
@@ -32,8 +32,11 @@ echo   pixie: booting ${image} from ${server}
 echo
 # vmlinuz and initrd were extracted out of the ISO. Linux takes over from
 # here, and the installer fetches the ISO itself over HTTP -- that is url=.
-kernel http://${server}/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/${image}/image.iso ---
-initrd http://${server}/${image}/initrd
+# autoinstall + ds=nocloud-net point the installer at our answer files.
+# The trailing slash on s= is required: cloud-init appends user-data and
+# meta-data to it. Without it you silently get the interactive installer.
+kernel http://${server}/images/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/images/${image}/image.iso autoinstall ds=nocloud-net;s=http://${server}/autoinstall/ ---
+initrd http://${server}/images/${image}/initrd
 boot || goto failed
 
 :local
