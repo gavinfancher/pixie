@@ -1,11 +1,5 @@
 #!ipxe
 
-# Our own address, stated explicitly.
-#
-# It is tempting to use iPXE's ${next-server} here instead. Don't. Once iPXE
-# starts it makes its own DHCP request, UniFi answers that one as well, and
-# its reply overwrites next-server with the gateway (10.0.0.1). The machine
-# then asks the router for the installer and gets "Permission denied".
 set server 10.0.0.55
 
 :menu
@@ -16,8 +10,6 @@ item local   Boot from local disk (default)
 choose --default local --timeout 30000 target || goto local
 goto ${target}
 
-# Each release is a directory under images/. Adding one is a new label here
-# plus a new item above.
 :u2604
 set image ubuntu-26.04
 goto install
@@ -30,11 +22,6 @@ goto install
 echo
 echo   pixie: booting ${image} from ${server}
 echo
-# vmlinuz and initrd were extracted out of the ISO. Linux takes over from
-# here, and the installer fetches the ISO itself over HTTP -- that is url=.
-# autoinstall + ds=nocloud-net point the installer at our answer files.
-# The trailing slash on s= is required: cloud-init appends user-data and
-# meta-data to it. Without it you silently get the interactive installer.
 kernel http://${server}/images/${image}/vmlinuz initrd=initrd ip=dhcp url=http://${server}/images/${image}/image.iso autoinstall ds=nocloud-net;s=http://${server}/autoinstall/ ---
 initrd http://${server}/images/${image}/initrd
 boot || goto failed

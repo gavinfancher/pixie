@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Download an OS image and extract the files a machine needs to netboot it.
-# Everything specific to a release lives in images/<release>/image.conf.
-#
-#   ./scripts/fetch-image.sh ubuntu-26.04
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
@@ -18,7 +14,6 @@ DIR="images/$REL"
 CONF="$DIR/image.conf"
 [ -f "$CONF" ] || { echo "no such image: $CONF"; exit 1; }
 
-# Read one "key = value" line, ignoring comments and surrounding spaces.
 conf() { sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$CONF" | head -1; }
 
 URL=$(conf url)
@@ -42,8 +37,6 @@ if [ ! -s "$ISO" ]; then
   mv "$ISO.part" "$ISO"
 fi
 
-# Verify every run, not just after downloading. A truncated or altered ISO
-# otherwise fails much later, halfway through an install on real hardware.
 echo "==> verifying sha256"
 ACTUAL=$(sha256sum "$ISO" | cut -d' ' -f1)
 if [ "$ACTUAL" != "$SHA" ]; then
@@ -54,7 +47,6 @@ if [ "$ACTUAL" != "$SHA" ]; then
   exit 1
 fi
 
-# -O writes the member to stdout, so we never unpack the whole 2.7GB tree.
 echo "==> extracting $KERNEL"
 bsdtar -xOf "$ISO" "$KERNEL" > "$DIR/vmlinuz"
 echo "==> extracting $INITRD"

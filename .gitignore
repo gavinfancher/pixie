@@ -1,9 +1,5 @@
-# Downloaded, not authored. Fetch with:
-#   curl -fL -o boot/ipxe.efi https://boot.ipxe.org/x86_64-efi/ipxe.efi
 boot/ipxe.efi
 
-# OS images and the files extracted from them (~3GB per release).
-# Recreate with:  ./scripts/fetch-image.sh <release>
 images/*/image.iso
 images/*/vmlinuz
 images/*/initrd

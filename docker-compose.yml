@@ -1,11 +1,7 @@
 services:
-  # Answers the PXE half of the DHCP conversation and serves the small
-  # iPXE binary over TFTP.
   dnsmasq:
     build: .
     restart: unless-stopped
-    # DHCP arrives as a broadcast to 255.255.255.255. A container on Docker's
-    # normal bridge network never sees it, so we share the VM's network stack.
     network_mode: host
     cap_add:
       - NET_ADMIN
@@ -13,16 +9,11 @@ services:
       - ./dnsmasq.conf:/etc/dnsmasq.conf:ro
       - ./boot:/boot:ro
 
-  # Serves the kernel, the initrd and the ISO. TFTP is far too slow for these,
-  # and unlike dnsmasq this needs no special networking -- a normal port is fine.
   nginx:
     image: nginx:alpine
     restart: unless-stopped
     ports:
       - "80:80"
     volumes:
-      # Siblings under the web root, so the URL layout mirrors the repo.
-      # Neither can be nested inside the other: Docker cannot create a
-      # mountpoint inside a read-only bind mount.
       - ./images:/usr/share/nginx/html/images:ro
       - ./autoinstall:/usr/share/nginx/html/autoinstall:ro

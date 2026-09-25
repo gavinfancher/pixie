@@ -111,6 +111,22 @@ them.
 
 ## Things that cost us time
 
+- **`autoinstall/user-data` cannot be renamed and cannot lose its first
+  line.** cloud-init appends the literal name `user-data` to the `s=` URL,
+  and `#cloud-config` is what identifies the format -- it is not a comment.
+  Break either and you silently get the interactive installer.
+- **The trailing slash on `ds=nocloud-net;s=http://.../autoinstall/`** is
+  required for the same reason, and fails the same silent way.
+- **`dhcp-match=set:ipxe,175` in `dnsmasq.conf` is load-bearing.** iPXE
+  announces itself with DHCP option 175; without that tag we would hand iPXE
+  another copy of iPXE forever.
+- **`images/` and `autoinstall/` cannot nest** under the nginx web root.
+  Docker cannot create a mountpoint inside a read-only bind mount.
+- **`kernel = casper/vmlinuz` is Ubuntu-specific.** It is declared per image
+  so another distro is a new `image.conf`, not a change to the script.
+- **Every machine installs with the hostname `ubuntu`** on purpose. Ansible
+  renames them; a hostname is configuration, and this file runs once.
+
 - **`${next-server}` does not work here.** Once iPXE starts it makes its own
   DHCP request, UniFi answers that one too, and overwrites `next-server` with
   the gateway. The machine then asks the router for the installer. The server
