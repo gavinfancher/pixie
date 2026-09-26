@@ -12,10 +12,6 @@ the "which boot file?" half of the same request.
 UniFi), on the same flat network as the machines you boot. PXE begins as a
 broadcast, so a router between them will break it.
 
-```sh
-sudo apt install libarchive-tools     # bsdtar, reads the ISO
-```
-
 **The client** — x86, UEFI, with:
 
 - **Secure Boot disabled.** `ipxe.efi` is unsigned; Secure Boot rejects it and
@@ -25,10 +21,15 @@ sudo apt install libarchive-tools     # bsdtar, reads the ISO
 ## Setup
 
 ```sh
-curl -fL -o boot/ipxe.efi https://boot.ipxe.org/x86_64-efi/ipxe.efi
-./scripts/fetch-image.sh ubuntu-26.04
 docker compose up -d
 ```
+
+That is the whole thing. A `bootstrap` service runs first and downloads
+anything missing -- `ipxe.efi`, and every image declared under `images/` --
+then dnsmasq and nginx start. Nothing needs installing on the host but Docker.
+
+The first run takes a while (~3GB per release). Later runs take a second,
+because bootstrap only fetches what is absent.
 
 ## Booting a machine
 
@@ -54,7 +55,7 @@ Watch what happens: `docker compose logs -f dnsmasq`
 ```sh
 mkdir images/ubuntu-24.04
 $EDITOR images/ubuntu-24.04/image.conf    # copy an existing one
-./scripts/fetch-image.sh ubuntu-24.04
+docker compose up -d                      # bootstrap fetches it
 ```
 
 Then add an `item` and a matching label in `boot/boot.ipxe`.
@@ -103,7 +104,8 @@ is why there are two services.
 | `boot/boot.ipxe` | The menu, and how each release boots |
 | `images/<release>/image.conf` | Where an ISO comes from and what is inside it |
 | `autoinstall/user-data` | The installer's answers. Holds no secret: SSH key only |
-| `scripts/fetch-image.sh` | Downloads, verifies, extracts |
+| `scripts/bootstrap.sh` | Fetches anything missing; runs before the servers |
+| `scripts/fetch-image.sh` | Downloads, verifies, extracts one image |
 | `docker-compose.yml` | dnsmasq needs host networking for broadcasts; nginx does not |
 
 Images are not in git — `image.conf` is the recipe, `fetch-image.sh` rebuilds

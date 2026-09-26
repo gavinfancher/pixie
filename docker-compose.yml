@@ -1,4 +1,13 @@
 services:
+  bootstrap:
+    build: ./bootstrap
+    user: "1000:1000"
+    working_dir: /pixie
+    volumes:
+      - ./:/pixie
+    command: ./scripts/bootstrap.sh
+    restart: "no"
+
   dnsmasq:
     build: .
     restart: unless-stopped
@@ -8,6 +17,9 @@ services:
     volumes:
       - ./dnsmasq.conf:/etc/dnsmasq.conf:ro
       - ./boot:/boot:ro
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
 
   nginx:
     image: nginx:alpine
@@ -17,3 +29,6 @@ services:
     volumes:
       - ./images:/usr/share/nginx/html/images:ro
       - ./autoinstall:/usr/share/nginx/html/autoinstall:ro
+    depends_on:
+      bootstrap:
+        condition: service_completed_successfully
