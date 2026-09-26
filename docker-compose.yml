@@ -1,6 +1,8 @@
 services:
   bootstrap:
-    build: ./bootstrap
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.bootstrap
     user: "1000:1000"
     working_dir: /pixie
     volumes:
@@ -9,7 +11,9 @@ services:
     restart: "no"
 
   dnsmasq:
-    build: .
+    build:
+      context: ./docker
+      dockerfile: Dockerfile.dnsmasq
     restart: unless-stopped
     network_mode: host
     cap_add:

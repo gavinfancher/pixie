@@ -107,6 +107,7 @@ is why there are two services.
 | `scripts/bootstrap.sh` | Fetches anything missing; runs before the servers |
 | `scripts/fetch-image.sh` | Downloads, verifies, extracts one image |
 | `docker-compose.yml` | dnsmasq needs host networking for broadcasts; nginx does not |
+| `docker/Dockerfile.*` | One per built image |
 
 Images are not in git — `image.conf` is the recipe, `fetch-image.sh` rebuilds
 them.
