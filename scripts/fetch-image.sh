@@ -3,16 +3,26 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+die() { echo "$*" >&2; exit 1; }
+
+releases() {
+  for d in images/*/; do
+    [ -f "$d/image.conf" ] && basename "$d"
+  done
+}
+
 REL="${1:-}"
 if [ -z "$REL" ]; then
-  echo "usage: $0 <release>"
-  echo "available:"; ls -1 images 2>/dev/null | sed 's/^/  /'
+  echo "usage: $(basename "$0") <release>"
+  releases | sed 's/^/  /'
   exit 1
 fi
 
 DIR="images/$REL"
 CONF="$DIR/image.conf"
-[ -f "$CONF" ] || { echo "no such image: $CONF"; exit 1; }
+ISO="$DIR/image.iso"
+
+[ -f "$CONF" ] || die "no such image: $CONF"
 
 conf() { sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$CONF" | head -1; }
 
@@ -20,38 +30,46 @@ URL=$(conf url)
 SHA=$(conf sha256)
 KERNEL=$(conf kernel)
 INITRD=$(conf initrd)
-for key in url sha256 kernel initrd; do
-  [ -n "$(conf "$key")" ] || { echo "$CONF is missing '$key'"; exit 1; }
-done
 
-command -v bsdtar >/dev/null || {
-  echo "bsdtar is required:  sudo apt install libarchive-tools"; exit 1; }
+[ -n "$URL" ]    || die "$CONF: missing 'url'"
+[ -n "$SHA" ]    || die "$CONF: missing 'sha256'"
+[ -n "$KERNEL" ] || die "$CONF: missing 'kernel'"
+[ -n "$INITRD" ] || die "$CONF: missing 'initrd'"
 
-ISO="$DIR/image.iso"
+command -v bsdtar >/dev/null || die "bsdtar is required: sudo apt install libarchive-tools"
+
+extract() {
+  local member="$1" dest="$2"
+  echo "==> extracting $member"
+  if ! bsdtar -xOf "$ISO" "$member" > "$dest.part" 2>/dev/null; then
+    rm -f "$dest.part"
+    die "$member is not in $ISO -- check 'kernel' and 'initrd' in $CONF"
+  fi
+  if [ ! -s "$dest.part" ]; then
+    rm -f "$dest.part"
+    die "$member is empty in $ISO"
+  fi
+  mv "$dest.part" "$dest"
+}
 
 echo "==> $REL"
 
 if [ ! -s "$ISO" ]; then
   echo "==> downloading $(basename "$URL")"
-  curl -fL --progress-bar -C - -o "$ISO.part" "$URL"
+  curl -fL --progress-bar -C - -o "$ISO.part" "$URL" || die "download failed: $URL"
   mv "$ISO.part" "$ISO"
 fi
 
 echo "==> verifying sha256"
 ACTUAL=$(sha256sum "$ISO" | cut -d' ' -f1)
-if [ "$ACTUAL" != "$SHA" ]; then
-  echo "CHECKSUM MISMATCH"
-  echo "  expected $SHA"
-  echo "  actual   $ACTUAL"
-  echo "Delete $ISO and re-run to download again."
-  exit 1
-fi
+[ "$ACTUAL" = "$SHA" ] || die "checksum mismatch
+  expected $SHA
+  actual   $ACTUAL
+  delete $ISO and re-run to download it again"
 
-echo "==> extracting $KERNEL"
-bsdtar -xOf "$ISO" "$KERNEL" > "$DIR/vmlinuz"
-echo "==> extracting $INITRD"
-bsdtar -xOf "$ISO" "$INITRD" > "$DIR/initrd"
+extract "$KERNEL" "$DIR/vmlinuz"
+extract "$INITRD" "$DIR/initrd"
 
 echo
 echo "ready: $DIR"
-ls -lh "$DIR" | tail -n +2 | awk '{printf "  %-12s %s\n", $9, $5}'
+du -h "$ISO" "$DIR/vmlinuz" "$DIR/initrd" | awk '{printf "  %-6s %s\n", $1, $2}'
