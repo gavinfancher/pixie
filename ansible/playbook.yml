@@ -1,19 +1,30 @@
 - name: Configure mini PCs
   hosts: minipcs
   become: true
+  serial: 1
   tasks:
-    - name: Install btop
+    - name: Upgrade all packages
       ansible.builtin.apt:
-        name: btop
-        state: present
         update_cache: true
-    - name: Install neovim
+        upgrade: dist
+
+    - name: Remove packages no longer needed
       ansible.builtin.apt:
-        name: neovim
-        state: present
-        update_cache: true
-    - name: Install fast fetch
+        autoremove: true
+
+    - name: Install packages
       ansible.builtin.apt:
-        name: fastfetch
+        name:
+          - btop
+          - neovim
+          - fastfetch
         state: present
-        update_cache: true
+
+    - name: Check whether a reboot is required
+      ansible.builtin.stat:
+        path: /var/run/reboot-required
+      register: reboot_required
+
+    - name: Reboot
+      ansible.builtin.reboot:
+      when: reboot_required.stat.exists
