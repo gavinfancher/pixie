@@ -1,0 +1,9 @@
+- name: Configure mini PCs
+  hosts: minipcs
+  become: true
+  tasks:
+    - name: Install btop
+      ansible.builtin.apt:
+        name: btop
+        state: present
+        update_cache: true

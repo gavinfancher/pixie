@@ -96,6 +96,19 @@ machine firmware
 TFTP carries only the 1MB handoff; it is too slow for anything larger. That
 is why there are two services.
 
+## Configuring machines
+
+Installing is pixie's job; configuring is Ansible's. Run it from a machine
+holding the SSH key that `autoinstall/user-data` authorizes:
+
+```sh
+cd ansible
+ansible-playbook playbook.yml
+```
+
+Hosts are addressed by their Tailscale names, so this works from any network
+rather than only on the LAN.
+
 ## Files
 
 | Path | What |
@@ -104,6 +117,8 @@ is why there are two services.
 | `boot/boot.ipxe` | The menu, and how each release boots |
 | `images/<release>/image.conf` | Where an ISO comes from and what is inside it |
 | `autoinstall/user-data` | The installer's answers. Holds no secret: SSH key only |
+| `ansible/playbook.yml` | What every machine gets after it is installed |
+| `ansible/inventory.ini` | Which machines |
 | `scripts/bootstrap.sh` | Fetches anything missing; runs before the servers |
 | `scripts/fetch-image.sh` | Downloads, verifies, extracts one image |
 | `docker-compose.yml` | dnsmasq needs host networking for broadcasts; nginx does not |
