@@ -12,3 +12,8 @@
         name: neovim
         state: present
         update_cache: true
+    - name: Install fast fetch
+      ansible.builtin.apt:
+        name: fastfetch
+        state: present
+        update_cache: true
